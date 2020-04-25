@@ -1,0 +1,11 @@
+{
+  "dependencies": {
+    "fluent-ffmpeg": "^2.1.2",
+    "fs-extra": "^9.0.0",
+    "node-fetch": "^2.6.0",
+    "node-telegram-bot-api": "^0.40.0",
+    "shuffle-array": "^1.0.1",
+    "telegraf": "^3.37.0",
+    "xmlhttprequest": "^1.8.0"
+  }
+}
