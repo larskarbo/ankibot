@@ -20,6 +20,13 @@ const state = {
 
 const bot = new Telegraf("1196576929:AAFCVPBTMcSUlrHAIFBO_Ni7e9em0Nje10U")
 
+
+invoke('version').then(a => {
+  console.log('Success', a)
+}).catch(a => {
+  console.log('error', a)
+})
+
 const refreshState = async (ctx) => {
   try {
     state.notes = await getNotes()
@@ -225,7 +232,18 @@ bot.command('movecards', async (ctx) => {
   ctx.reply('All good.')
 })
 
-// bot.telegram.sendMessage(db["cyri"], "Thank you cyrielle, this bot is very happy now")
+
+bot.command('ready', async (ctx) => {
+  const notes = await getNotes()
+  let msg = "🌈 Bot is online ready for some recording! " + notes.length + " sounds needed :)"
+  bot.telegram.sendMessage(db["cyri"], msg)
+  bot.telegram.sendMessage(db["lars"], msg)
+  
+  msg = "try /frenchrecord"
+  bot.telegram.sendMessage(db["cyri"], msg)
+  bot.telegram.sendMessage(db["lars"], msg)
+})
+
 
 bot.command('prune', async (ctx) => {
   ctx.reply('Removing entries where sound file is missing...')
