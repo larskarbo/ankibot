@@ -1,7 +1,10 @@
 {
   "dependencies": {
+    "axios": "^0.19.2",
     "fluent-ffmpeg": "^2.1.2",
+    "forvo": "^1.0.0",
     "fs-extra": "^9.0.0",
+    "html2plaintext": "^2.1.2",
     "node-fetch": "^2.6.0",
     "node-telegram-bot-api": "^0.40.0",
     "shuffle-array": "^1.0.1",

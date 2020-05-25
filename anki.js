@@ -1,6 +1,7 @@
 const fetch = require('node-fetch');
 const VERSION = 6
-const ANKI_SERVER = 'http://127.0.0.1:8765'
+const ANKI_SERVER = process.env.ANKI_SERVER || 'http://127.0.0.1:8765'
+console.log('ANKI_SERVER: ', ANKI_SERVER);
 // const ANKI_SERVER = 'http://cyrielles-mac-mini.local:8765'
 function invoke(action, params = {}) {
   console.log("running", action)

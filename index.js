@@ -7,7 +7,6 @@ const shuffle = require("shuffle-array")
 const { exec } = require("child_process");
 const Composer = require('telegraf/composer')
 var ffmpeg = require('fluent-ffmpeg');
-
 const db = {
   "lars": 912275377,
   "cyri": 501141030
@@ -17,9 +16,14 @@ const state = {
   done: 0
 }
 
+const {
+	FRENCH_DECK,
+	MISSING_VOICE_DECK,
+	getNotes
+} = require("./lib")
+
 
 const bot = new Telegraf("1196576929:AAFCVPBTMcSUlrHAIFBO_Ni7e9em0Nje10U")
-
 
 invoke('version').then(a => {
   console.log('Success', a)
@@ -44,8 +48,8 @@ bot.start((ctx) => ctx.reply('Welcome try /frenchrecord'))
 bot.help((ctx) => ctx.reply('Try /frenchrecord'))
 
 
+
 bot.command('frenchrecord', async (ctx) => {
-  console.log("is this cyri?", ctx.from.id, ctx.chat.id)
   ctx.reply('Starting french sesssion...')
   await refreshState(ctx)
   ctx.reply('Ready! Please record your voice for the words we send.')
@@ -57,29 +61,6 @@ bot.command('frenchrecord', async (ctx) => {
 // })
 
 
-const getNotes = async () => {
-
-  const result1 = await invoke('findNotes', { query: "deck:French" });
-  console.log('result1: ', result1);
-  const result2 = await invoke('findNotes', { query: "deck:missingvoice" });
-  console.log('result2: ', result2);
-  const notes = await invoke('notesInfo', { notes: [...result1, ...result2] })
-  // console.log('notes: ', notes);
-
-
-  return notes.filter(m => m.modelName == '2. Picture Words')
-    .filter(m => {
-      const f = m.fields['Pronunciation (Recording and/or IPA)']
-      if (typeof f == 'undefined') {
-        return true
-      }
-      if (!f.value.includes("[sound:")) {
-        return true
-      }
-      return false
-    })
-}
-
 
 bot.command('good', (ctx) => {
   // console.log(ctx.from.id, ctx.chat.id)
@@ -88,7 +69,7 @@ bot.command('good', (ctx) => {
 })
 
 bot.command('sync', async (ctx) => {
-  const res = await invoke('sync', { query: "deck:French" });
+  const res = await invoke('sync', { query: FRENCH_DECK });
   console.log('res: ', res);
   ctx.reply('good')
 })
@@ -213,7 +194,7 @@ bot.command('movecards', async (ctx) => {
   const res = await invoke('changeDeck', { cards, deck: "missingvoice" });
   ctx.reply("moved " + notes.length + " notes")
   ctx.reply('Moving cards from missingvoice to french...')
-  const result2 = await invoke('findNotes', { query: "deck:missingvoice" });
+  const result2 = await invoke('findNotes', { query: MISSING_VOICE_DECK });
   const notes2 = await invoke('notesInfo', { notes: [...result2] })
   const notes3 = notes2.filter(m => m.modelName == '2. Picture Words')
     .filter(m => {
@@ -227,7 +208,7 @@ bot.command('movecards', async (ctx) => {
       return true
     })
   const cards2 = notes3.map(n => n.cards).flat()
-  const res2 = await invoke('changeDeck', { cards: cards2, deck: "French" });
+  const res2 = await invoke('changeDeck', { cards: cards2, deck: FRENCH_DECK });
   ctx.reply("moved " + notes3.length + " notes")
   ctx.reply('All good.')
 })
@@ -238,17 +219,18 @@ bot.command('ready', async (ctx) => {
   let msg = "🌈 Bot is online ready for some recording! " + notes.length + " sounds needed :)"
   bot.telegram.sendMessage(db["cyri"], msg)
   bot.telegram.sendMessage(db["lars"], msg)
-  
+
   msg = "try /frenchrecord"
   bot.telegram.sendMessage(db["cyri"], msg)
   bot.telegram.sendMessage(db["lars"], msg)
 })
 
 
+
 bot.command('prune', async (ctx) => {
   ctx.reply('Removing entries where sound file is missing...')
-  const result1 = await invoke('findNotes', { query: "deck:missingvoice" });
-  const result2 = await invoke('findNotes', { query: "deck:French" });
+  const result1 = await invoke('findNotes', { query: MISSING_VOICE_DECK });
+  const result2 = await invoke('findNotes', { query: FRENCH_DECK });
   const notes2 = await invoke('notesInfo', { notes: [...result1, ...result2] })
 
   for (const n of notes2) {
@@ -281,32 +263,3 @@ bot.command('prune', async (ctx) => {
   }
   ctx.reply("done")
 })
-
-
-// const convertMp3 = async (ctx) => {
-//   // ctx.reply('Getting notes...')
-//   const notes = await invoke('findNotes', { query: "deck:French" });
-//   const notes2 = await invoke('findNotes', { query: "deck:missingvoice" });
-//   const notesWithInfo = await invoke('notesInfo', { notes: [...notes, ...notes2] })
-//   // console.log('notesWithInfo: ', notesWithInfo);
-//   const na = notesWithInfo
-//     .map(n => [n, n.fields['Pronunciation (Recording and/or IPA)']])
-//     .filter(a => typeof a[1] != 'undefined')
-//     .map(a => a[0])
-
-//   for(const n of na){
-//     console.log(n.fields.Word)
-//     console.log(n.fields['Pronunciation (Recording and/or IPA)'])
-//     console.log(n.fields['Pronunciation (Recording and/or IPA)'].value.replace(".oga", ".mp3"))
-    // await invoke('updateNoteFields', {
-    //   note: {
-    //     id: n.noteId,
-    //     fields: {
-    //       'Pronunciation (Recording and/or IPA)': n.fields['Pronunciation (Recording and/or IPA)'].value.replace(".oga", ".mp3")
-    //     }
-    //   }
-    // })
-//   }
-//   exec("./anki_media_convert.sh")
-//   // ctx.reply('All good.'4)
-// }
