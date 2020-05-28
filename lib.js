@@ -1,5 +1,5 @@
-const FRENCH_DECK = "deck:all::French";
-const MISSING_VOICE_DECK = "deck:missingvoice";
+const FRENCH_DECK = "all::French";
+const MISSING_VOICE_DECK = "missingvoice";
 
 const { invoke } = require("./anki");
 
@@ -12,8 +12,8 @@ const ensure = () => {
   });
 };
 const getNotes = async () => {
-  const result1 = await invoke("findNotes", { query: FRENCH_DECK });
-  const result2 = await invoke("findNotes", { query: MISSING_VOICE_DECK });
+  const result1 = await invoke("findNotes", { query: "deck:"+FRENCH_DECK });
+  const result2 = await invoke("findNotes", { query: "deck:"+MISSING_VOICE_DECK });
   const notesIds = [...new Set([...result1, ...result2])]; // <- set removes duplicates
   const notes = await invoke("notesInfo", { notes: notesIds });
 

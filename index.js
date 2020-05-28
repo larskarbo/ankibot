@@ -69,7 +69,7 @@ bot.command('good', (ctx) => {
 })
 
 bot.command('sync', async (ctx) => {
-  const res = await invoke('sync', { query: FRENCH_DECK });
+  const res = await invoke('sync', { query: "deck:"+FRENCH_DECK });
   console.log('res: ', res);
   ctx.reply('good')
 })
@@ -188,13 +188,17 @@ bot.launch()
 
 
 bot.command('movecards', async (ctx) => {
-  ctx.reply('Moving cards from french to missingvoice...')
+	ctx.reply('Moving cards from french to missingvoice...')
+	const pre = (await invoke('findNotes', { query: "deck:"+FRENCH_DECK })).length
+	console.log('pre: ', pre);
   const notes = await getNotes()
   const cards = notes.map(n => n.cards).flat()
-  const res = await invoke('changeDeck', { cards, deck: "missingvoice" });
-  ctx.reply("moved " + notes.length + " notes")
+  const res = await invoke('changeDeck', { cards, deck: MISSING_VOICE_DECK });
+	const post = (await invoke('findNotes', { query: "deck:"+FRENCH_DECK })).length
+	console.log('post: ', post);
+  ctx.reply("moved " + (post-pre) + " notes")
   ctx.reply('Moving cards from missingvoice to french...')
-  const result2 = await invoke('findNotes', { query: MISSING_VOICE_DECK });
+  const result2 = await invoke('findNotes', { query: "deck:"+MISSING_VOICE_DECK });
   const notes2 = await invoke('notesInfo', { notes: [...result2] })
   const notes3 = notes2.filter(m => m.modelName == '2. Picture Words')
     .filter(m => {
@@ -229,8 +233,8 @@ bot.command('ready', async (ctx) => {
 
 bot.command('prune', async (ctx) => {
   ctx.reply('Removing entries where sound file is missing...')
-  const result1 = await invoke('findNotes', { query: MISSING_VOICE_DECK });
-  const result2 = await invoke('findNotes', { query: FRENCH_DECK });
+  const result1 = await invoke('findNotes', { query: "deck:"+MISSING_VOICE_DECK });
+  const result2 = await invoke('findNotes', { query: "deck:"+FRENCH_DECK });
   const notes2 = await invoke('notesInfo', { notes: [...result1, ...result2] })
 
   for (const n of notes2) {
