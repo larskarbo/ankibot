@@ -69,7 +69,7 @@ bot.command('good', (ctx) => {
 })
 
 bot.command('sync', async (ctx) => {
-  const res = await invoke('sync', { query: "deck:"+FRENCH_DECK });
+  const res = await invoke('sync');
   console.log('res: ', res);
   ctx.reply('good')
 })
