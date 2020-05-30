@@ -8,12 +8,12 @@ const { exec } = require("child_process");
 const Composer = require('telegraf/composer')
 var ffmpeg = require('fluent-ffmpeg');
 const db = {
-  "lars": 912275377,
-  "cyri": 501141030
+	"lars": 912275377,
+	"cyri": 501141030
 }
 
 const state = {
-  done: 0
+	done: 0
 }
 
 const {
@@ -26,22 +26,22 @@ const {
 const bot = new Telegraf("1196576929:AAFCVPBTMcSUlrHAIFBO_Ni7e9em0Nje10U")
 
 invoke('version').then(a => {
-  console.log('Success', a)
+	console.log('Success', a)
 }).catch(a => {
-  console.log('error', a)
+	console.log('error', a)
 })
 
 const refreshState = async (ctx) => {
-  try {
-    state.notes = await getNotes()
-    ctx.reply('ANKI DB:: ' + state.notes.length + " words to be recorded")
-    return
-  } catch (error) {
-    console.error(error);
-    // expected output: ReferenceError: nonExistentFunction is not defined
-    // Note - error messages will vary depending on browser
-    return ctx.reply("Error when fetching notes from anki :(")
-  }
+	try {
+		state.notes = await getNotes()
+		ctx.reply('ANKI DB:: ' + state.notes.length + " words to be recorded")
+		return
+	} catch (error) {
+		console.error(error);
+		// expected output: ReferenceError: nonExistentFunction is not defined
+		// Note - error messages will vary depending on browser
+		return ctx.reply("Error when fetching notes from anki :(")
+	}
 }
 
 bot.start((ctx) => ctx.reply('Welcome try /frenchrecord'))
@@ -50,10 +50,10 @@ bot.help((ctx) => ctx.reply('Try /frenchrecord'))
 
 
 bot.command('frenchrecord', async (ctx) => {
-  ctx.reply('Starting french sesssion...')
-  await refreshState(ctx)
-  ctx.reply('Ready! Please record your voice for the words we send.')
-  next(ctx)
+	ctx.reply('Starting french sesssion...')
+	await refreshState(ctx)
+	ctx.reply('Ready! Please record your voice for the words we send.')
+	next(ctx)
 })
 // bot.command('horse', (ctx) => {
 //   ctx.reply('Starting french sesssion')
@@ -63,124 +63,124 @@ bot.command('frenchrecord', async (ctx) => {
 
 
 bot.command('good', (ctx) => {
-  // console.log(ctx.from.id, ctx.chat.id)
-  ctx.reply('good')
-  // return ctx.wizard.next()
+	// console.log(ctx.from.id, ctx.chat.id)
+	ctx.reply('good')
+	// return ctx.wizard.next()
 })
 
 bot.command('sync', async (ctx) => {
-  const res = await invoke('sync');
-  console.log('res: ', res);
-  ctx.reply('good')
+	const res = await invoke('sync');
+	console.log('res: ', res);
+	ctx.reply('good')
 })
 
 const next = async ctx => {
 
-  const notes = state.notes
+	const notes = state.notes
 
-  console.log('notes: ', notes.length);
-  if (notes.length == 0) {
-    state.word = false
-    ctx.reply("No more words to record! Thanks for the help ♥️")
-    return
-  }
-  if (state.done % 10 == 0 && state.done > 0) {
-    ctx.reply("You have done " + state.done + " words. Good job <3")
+	console.log('notes: ', notes.length);
+	if (notes.length == 0) {
+		state.word = false
+		ctx.reply("No more words to record! Thanks for the help ♥️")
+		return
+	}
+	if (state.done % 10 == 0 && state.done > 0) {
+		ctx.reply("You have done " + state.done + " words. Good job <3")
 
-  }
+	}
 
-  const note = notes[Math.floor(Math.random() * notes.length)]
-  state.note = note
-  state.word = note.fields.Word.value
-  state.done++
-  ctx.reply("🎤 (article) + " + state.word)
-  console.log("🎤 (article) +  " + state.word)
+	const note = notes[Math.floor(Math.random() * notes.length)]
+	state.note = note
+	state.word = note.fields.Word.value
+	state.done++
+	ctx.reply("🎤 (article) + " + state.word)
+	console.log("🎤 (article) +  " + state.word)
 }
 
 bot.on(['voice'], async (ctx) => {
-  if (!state.word) {
-    ctx.reply('Sorry, please run /frenchrecord again')
-    return
-  }
-  state.voicemsg = ctx.message
+	if (!state.word) {
+		ctx.reply('Sorry, please run /frenchrecord again')
+		return
+	}
+	state.voicemsg = ctx.message
 
-  ctx.reply('Good?', Markup.inlineKeyboard([
-    Markup.callbackButton('Voice is good', 'savevoice'),
-  ]).extra())
+	ctx.reply('Good?', Markup.inlineKeyboard([
+		Markup.callbackButton('Voice is good', 'savevoice'),
+	]).extra())
 })
 
 bot.action('savevoice', async (ctx) => {
-  if (!state.voicemsg) {
-    ctx.reply('Sorry, please run /frenchrecord again')
-    return
-  }
+	if (!state.voicemsg) {
+		ctx.reply('Sorry, please run /frenchrecord again')
+		return
+	}
 
-  if (state.done == 1 || state.done % 10 == 1) {
-    ctx.reply('Checking that the recordings are being saved...')
-    await saveVoice(ctx, state.word, state.voicemsg.voice.file_id, state.note.noteId)
-    const oldlength = state.notes.length
-    await refreshState(ctx)
-    if (state.notes.length == oldlength - 1) {
-      ctx.reply('✅ Anki DB operational')
-    } else {
-      ctx.reply('‼️ Something wrong with Anki db. Write /frenchrecord to try again')
-      return
-    }
-  } else {
-    saveVoice(ctx, state.word, state.voicemsg.voice.file_id, state.note.noteId)
-  }
+	if (state.done == 1 || state.done % 10 == 1) {
+		ctx.reply('Checking that the recordings are being saved...')
+		await saveVoice(ctx, state.word, state.voicemsg.voice.file_id, state.note.noteId)
+		const oldlength = state.notes.length
+		await refreshState(ctx)
+		if (state.notes.length == oldlength - 1) {
+			ctx.reply('✅ Anki DB operational')
+		} else {
+			ctx.reply('‼️ Something wrong with Anki db. Write /frenchrecord to try again')
+			return
+		}
+	} else {
+		saveVoice(ctx, state.word, state.voicemsg.voice.file_id, state.note.noteId)
+	}
 
-  state.notes = state.notes.filter(n => n.fields.Word.value != state.word)
-  next(ctx)
+	state.notes = state.notes.filter(n => n.fields.Word.value != state.word)
+	next(ctx)
 })
 
 const urlToB64 = (url) => {
-  return new Promise(resolve => {
-    ffmpeg(url)
-      .output("temp.mp3")
-      .on('end', function () {
-        console.log('Finished processing');
-        const b64 = fs.readFileSync("temp.mp3").toString('base64');
-        resolve(b64)
-      })
-      .run();
-  })
+	return new Promise(resolve => {
+		ffmpeg(url)
+			.output("temp.mp3")
+			.on('end', function () {
+				console.log('Finished processing');
+				const b64 = fs.readFileSync("temp.mp3").toString('base64');
+				resolve(b64)
+			})
+			.run();
+	})
 }
 
 const saveVoice = async (ctx, word, file_id, noteId) => {
-  console.log('Saving voice for word: ', word, file_id, noteId)
-  console.log('getting file link')
-  const url = await ctx.telegram.getFileLink(file_id)
-  console.log('getting file link done')
-  const filename = "larsthebot-" + word.replace(/\s/g, '-') + ".mp3"
+	console.log('Saving voice for word: ', word, file_id, noteId)
+	console.log('getting file link')
+	const url = await ctx.telegram.getFileLink(file_id)
+	console.log('getting file link done')
+	const filename = "larsthebot-" + word.replace(/\s/g, '-') + ".mp3"
 
-  b64 = await urlToB64(url)
+	b64 = await urlToB64(url)
 
 
 
-  await invoke('storeMediaFile', {
-    filename: filename,
-    data: b64
-  })
+	await invoke('storeMediaFile', {
+		filename: filename,
+		data: b64
+	})
 
-  const info = (await invoke('notesInfo', {
-    notes: [noteId]
-  }))[0]
-  console.log('info: ', info);
-  const currentPron = info.fields['Pronunciation (Recording and/or IPA)'].value
-  await invoke('updateNoteFields', {
-    note: {
-      id: noteId,
-      fields: {
-        'Pronunciation (Recording and/or IPA)': currentPron + "[sound:" + filename + "]"
-      }
-    }
-  })
+	const info = (await invoke('notesInfo', {
+		notes: [noteId]
+	}))[0]
+	console.log('info: ', info);
+	const currentPron = info.fields['Pronunciation (Recording and/or IPA)'].value
+	await invoke('updateNoteFields', {
+		note: {
+			id: noteId,
+			fields: {
+				'Pronunciation (Recording and/or IPA)': currentPron + "[sound:" + filename + "]"
+			}
+		}
+	})
 
-  await invoke('addTags', {
-    notes: [noteId],
-    tags: "horses"
-  })
+	await invoke('addTags', {
+		notes: [noteId],
+		tags: "horses"
+	})
 }
 
 bot.hears('hi', (ctx) => ctx.reply('Hey there'))
@@ -189,81 +189,79 @@ bot.launch()
 
 bot.command('movecards', async (ctx) => {
 	ctx.reply('Moving cards from french to missingvoice...')
-	const pre = (await invoke('findNotes', { query: "deck:"+FRENCH_DECK })).length
-	console.log('pre: ', pre);
-  const notes = await getNotes()
-  const cards = notes.map(n => n.cards).flat()
-  const res = await invoke('changeDeck', { cards, deck: MISSING_VOICE_DECK });
-	const post = (await invoke('findNotes', { query: "deck:"+FRENCH_DECK })).length
-	console.log('post: ', post);
-  ctx.reply("moved " + (post-pre) + " notes")
-  ctx.reply('Moving cards from missingvoice to french...')
-  const result2 = await invoke('findNotes', { query: "deck:"+MISSING_VOICE_DECK });
-  const notes2 = await invoke('notesInfo', { notes: [...result2] })
-  const notes3 = notes2.filter(m => m.modelName == '2. Picture Words')
-    .filter(m => {
-      const f = m.fields['Pronunciation (Recording and/or IPA)']
-      if (typeof f == 'undefined') {
-        return false
-      }
-      if (!f.value.includes("[sound:")) {
-        return false
-      }
-      return true
-    })
-  const cards2 = notes3.map(n => n.cards).flat()
-  const res2 = await invoke('changeDeck', { cards: cards2, deck: FRENCH_DECK });
-  ctx.reply("moved " + notes3.length + " notes")
-  ctx.reply('All good.')
+	const pre = (await invoke('findNotes', { query: "deck:" + FRENCH_DECK })).length
+	const notes = await getNotes()
+	const cards = notes.map(n => n.cards).flat()
+	const res = await invoke('changeDeck', { cards, deck: MISSING_VOICE_DECK });
+	const post = (await invoke('findNotes', { query: "deck:" + FRENCH_DECK })).length
+	ctx.reply("moved " + (post - pre) + " notes")
+	ctx.reply('Moving cards from missingvoice to french...')
+	const result2 = await invoke('findNotes', { query: "deck:" + MISSING_VOICE_DECK });
+	const notes2 = await invoke('notesInfo', { notes: [...result2] })
+	const notes3 = notes2.filter(m => m.modelName == '2. Picture Words')
+		.filter(m => {
+			const f = m.fields['Pronunciation (Recording and/or IPA)']
+			if (typeof f == 'undefined') {
+				return false
+			}
+			if (!f.value.includes("[sound:")) {
+				return false
+			}
+			return true
+		})
+	const cards2 = notes3.map(n => n.cards).flat()
+	const res2 = await invoke('changeDeck', { cards: cards2, deck: FRENCH_DECK });
+	ctx.reply("moved " + notes3.length + " notes")
+	ctx.reply('All good.')
 })
 
 
 bot.command('ready', async (ctx) => {
-  const notes = await getNotes()
-  let msg = "🌈 Bot is online ready for some recording! " + notes.length + " sounds needed :)"
-  bot.telegram.sendMessage(db["cyri"], msg)
-  bot.telegram.sendMessage(db["lars"], msg)
+	const notes = await getNotes()
+	let msg = "🌈 Bot is online ready for some recording! " + notes.length + " sounds needed :)"
+	bot.telegram.sendMessage(db["cyri"], msg)
+	bot.telegram.sendMessage(db["lars"], msg)
 
-  msg = "try /frenchrecord"
-  bot.telegram.sendMessage(db["cyri"], msg)
-  bot.telegram.sendMessage(db["lars"], msg)
+	msg = "try /frenchrecord"
+	bot.telegram.sendMessage(db["cyri"], msg)
+	bot.telegram.sendMessage(db["lars"], msg)
 })
 
 
 
 bot.command('prune', async (ctx) => {
-  ctx.reply('Removing entries where sound file is missing...')
-  const result1 = await invoke('findNotes', { query: "deck:"+MISSING_VOICE_DECK });
-  const result2 = await invoke('findNotes', { query: "deck:"+FRENCH_DECK });
-  const notes2 = await invoke('notesInfo', { notes: [...result1, ...result2] })
+	ctx.reply('Removing entries where sound file is missing...')
+	const result1 = await invoke('findNotes', { query: "deck:" + MISSING_VOICE_DECK });
+	const result2 = await invoke('findNotes', { query: "deck:" + FRENCH_DECK });
+	const notes2 = await invoke('notesInfo', { notes: [...result1, ...result2] })
 
-  for (const n of notes2) {
-    const pr = n.fields['Pronunciation (Recording and/or IPA)']
-    if (pr && pr.value.includes("[sound:")) {
-      // console.log(pr.value)
-      var regExp = /\[sound:[^\]]+\]/;
-      var matches = regExp.exec(pr.value)
-      console.log('matches: ', matches);
-      // console.log('matches: ', matches[1]);
-      const file = matches[0].split(":")[1].replace("]", "")
-      console.log('file: ', file);
-      const exists = await fs.pathExists(path.join(process.env.ANKI_MEDIA, file))
-      // console.log(file, exists)
-      // continue
-      if (!exists) {
-        ctx.reply("removing for sound ", n.fields['Word'])
-        // await invoke('updateNoteFields', {
-        //   note: {
-        //     id: n.noteId,
-        //     fields: {
-        //       'Pronunciation (Recording and/or IPA)': n.fields['Pronunciation (Recording and/or IPA)'].value.replace(matches[0], "")
-        //     }
-        //   }
-        // })
-      }
-    }
-    // console.log(process.env.ANKI_MEDIA)
-    // await fs.pathExists(path.join(process.env.ANKI_MEDIA))
-  }
-  ctx.reply("done")
+	for (const n of notes2) {
+		const pr = n.fields['Pronunciation (Recording and/or IPA)']
+		if (pr && pr.value.includes("[sound:")) {
+			// console.log(pr.value)
+			var regExp = /\[sound:[^\]]+\]/;
+			var matches = regExp.exec(pr.value)
+			console.log('matches: ', matches);
+			// console.log('matches: ', matches[1]);
+			const file = matches[0].split(":")[1].replace("]", "")
+			console.log('file: ', file);
+			const exists = await fs.pathExists(path.join(process.env.ANKI_MEDIA, file))
+			// console.log(file, exists)
+			// continue
+			if (!exists) {
+				ctx.reply("removing for sound ", n.fields['Word'])
+				// await invoke('updateNoteFields', {
+				//   note: {
+				//     id: n.noteId,
+				//     fields: {
+				//       'Pronunciation (Recording and/or IPA)': n.fields['Pronunciation (Recording and/or IPA)'].value.replace(matches[0], "")
+				//     }
+				//   }
+				// })
+			}
+		}
+		// console.log(process.env.ANKI_MEDIA)
+		// await fs.pathExists(path.join(process.env.ANKI_MEDIA))
+	}
+	ctx.reply("done")
 })
