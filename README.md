@@ -110,3 +110,10 @@ Syncs Anki with AnkiWeb
 By default, all chat-ids are accepted. If you add chat-ids to the env variable `ANKIBOT_ALLOWED_IDS` access control is on.
 
 Format (delimited by comma): `ANKIBOT_ALLOWED_IDS=12341234,23452345,34563456`
+
+## Related
+
+- [Anki](https://apps.ankiweb.net/) - Spaced Repetition Software
+- [AnkiConnect](https://github.com/FooSoft/anki-connect) - Well-made API plugin for Anki
+
+Thanks to [FooSoft](https://github.com/FooSoft) for creating AnkiConnect!
