@@ -1,6 +1,8 @@
 module.exports = {
-  apps : [{
-    name: 'ankigram',
-    script: 'index.js',
-  }],
-};
+  apps: [
+    {
+      name: 'ankibot',
+      script: 'index.js',
+    },
+  ],
+}

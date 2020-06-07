@@ -1,17 +1,19 @@
 {
+  "scripts": {
+    "start": "node src/index"
+  },
   "dependencies": {
-    "axios": "^0.19.2",
-    "btoa": "^1.2.1",
+    "chalk": "^4.0.0",
     "fluent-ffmpeg": "^2.1.2",
     "forvo": "^1.0.0",
     "fs-extra": "^9.0.0",
     "html2plaintext": "^2.1.2",
+    "lodash": "^4.17.15",
     "node-fetch": "^2.6.0",
-    "node-telegram-bot-api": "^0.40.0",
-    "promise": "^8.1.0",
     "shuffle-array": "^1.0.1",
-    "superagent": "^5.2.2",
+    "string-strip-html": "^4.4.7",
     "telegraf": "^3.37.0",
+    "telegraf-session-local": "^1.0.2",
     "xmlhttprequest": "^1.8.0"
   },
   "devDependencies": {
@@ -26,5 +28,11 @@
   },
   "lint-staged": {
     "*.{js,css,md}": "prettier --write"
-  }
+  },
+  "name": "ankibot",
+  "version": "2.0.0",
+  "main": "index.js",
+  "repository": "git@github.com:larskarbo/ankibot.git",
+  "author": "Lars Karbo <mail@larskarbo.no>",
+  "license": "MIT"
 }
