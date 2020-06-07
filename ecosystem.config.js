@@ -2,7 +2,7 @@ module.exports = {
   apps: [
     {
       name: 'ankibot',
-      script: 'index.js',
+      script: 'src/index.js',
     },
   ],
 }
