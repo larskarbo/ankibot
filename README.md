@@ -14,7 +14,7 @@
 [![Generic badge](https://img.shields.io/badge/🥁-larskarbo-Blue.svg)](https://larskarbo.no/)
 
 <div align="center">
-	<img src="stuff/demo.gif" width="300">
+	<img src="stuff/demo.gif" width="800">
 </div>
 
 ## Features
