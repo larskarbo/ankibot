@@ -37,9 +37,9 @@ bot.use(async (ctx, next) => {
 
 bot.command('start', async (ctx) => {
   ctx.session.done = 0 // restart done counter
-  const notes = await getNotesNeedingSound(noteSpecs)
   await ctx.reply('Welcome to the Anki Bot! ⭐️')
   await ctx.reply('Starting recording sesssion...')
+  const notes = await getNotesNeedingSound(noteSpecs)
   await refreshState(ctx)
   await ctx.reply('Ready! Please record your voice for the words we send.')
   next(ctx)
@@ -73,12 +73,13 @@ const next = async (ctx) => {
   ctx.session.note = note
   ctx.session.textToRecord = stripHtml(note.fields[note.noteSpec.textField].value)
   ctx.session.done++
-  ctx.reply('🎤 ' + ctx.session.textToRecord)
+  await ctx.reply('🎤 ' + ctx.session.textToRecord)
 }
 
 bot.on(['voice'], async (ctx) => {
+  console.log(ctx.session)
   if (!ctx.session.textToRecord) {
-    ctx.reply('Sorry, please run /record again')
+    ctx.reply('Sorry, please run /start again')
     return
   }
   ctx.session.voicemsg = ctx.message
@@ -91,7 +92,7 @@ bot.on(['voice'], async (ctx) => {
 
 bot.action('savevoice', async (ctx) => {
   if (!ctx.session.voicemsg) {
-    ctx.reply('Sorry, please run /record again')
+    ctx.reply('Sorry, please run /start again')
     return
   }
 
