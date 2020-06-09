@@ -12,8 +12,6 @@ const { urlToB64 } = require('./utils')
 
 const bot = new Telegraf(process.env.ANKIBOT_API_TOKEN)
 
-bot.use(new LocalSession({ database: 'db.json' }).middleware())
-
 let allowedIds
 if (process.env.ANKIBOT_ALLOWED_IDS) {
   allowedIds = process.env.ANKIBOT_ALLOWED_IDS.split(',')
@@ -34,6 +32,8 @@ bot.use(async (ctx, next) => {
     next()
   }
 })
+
+bot.use(new LocalSession({ database: 'db.json', storage: LocalSession.storageFileSync }).middleware())
 
 bot.command('start', async (ctx) => {
   ctx.session.done = 0 // restart done counter
