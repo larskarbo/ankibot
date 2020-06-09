@@ -62,6 +62,7 @@ const addTextToFieldInNote = async (noteId, text, field) => {
 
 module.exports = {
   getNotesNeedingSound,
+  getNotesNeedingSoundFromNoteSpec,
   testAnkiConnection,
   addTextToFieldInNote,
 }
