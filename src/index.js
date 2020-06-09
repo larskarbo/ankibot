@@ -156,6 +156,7 @@ testAnkiConnection()
   .then((a) => {
     bot.launch()
   })
-  .catch(() => {
+  .catch((e) => {
     console.error(chalk.red('ERROR: Could not connect to AnkiConnect'))
+    console.error(e)
   })
