@@ -2,7 +2,8 @@ module.exports = {
   apps: [
     {
       name: 'ankibot',
-      script: 'src/index.js',
+			script: './node_modules/.bin/ts-node',
+			args: 'src/index.ts'
     },
   ],
 }
