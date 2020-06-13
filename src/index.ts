@@ -1,51 +1,65 @@
-const Telegraf = require('telegraf')
-const { Markup } = Telegraf
+import Telegraf, { Markup, Context as TelegrafContext, ContextMessageUpdate } from 'telegraf'
+
 const fs = require('fs-extra')
 const LocalSession = require('telegraf-session-local')
 const stripHtml = require('string-strip-html')
 const chalk = require('chalk')
 
-const noteSpecs = require('../noteSpecs.config')
-const { invoke } = require('./anki')
-const { getNotesNeedingSound, addTextToFieldInNote, testAnkiConnection } = require('./ankihelpers')
-const { urlToB64 } = require('./utils')
+import noteSpecs from './noteSpecs.config'
+import { invoke } from './anki'
+import { Note, getNotesNeedingSound, addTextToFieldInNote, testAnkiConnection } from './ankihelpers'
+import { urlToB64 } from './utils'
 
-const bot = new Telegraf(process.env.ANKIBOT_API_TOKEN)
+const bot = new Telegraf(process.env.ANKIBOT_API_TOKEN as string)
 
-let allowedIds
+interface Session {
+  done: number
+  notes: Note[]
+  note: Note
+  textToRecord: string | null
+  voicemsg: TelegrafContext['message']
+}
+
+declare module 'telegraf' {
+  interface ContextMessageUpdate {
+    session: Session
+  }
+}
+
+let allowedIds: string[] = []
 if (process.env.ANKIBOT_ALLOWED_IDS) {
   allowedIds = process.env.ANKIBOT_ALLOWED_IDS.split(',')
-} else {
-  allowedIds = []
 }
 
 bot.use(async (ctx, next) => {
-  console.log('allowedIds: ', allowedIds, ctx.chat.id)
+  if (!ctx.chat) {
+    await ctx.reply('🟥 Error: could not read your ctx.chat...')
+    return
+  }
   if (allowedIds.length && !allowedIds.includes(ctx.chat.id + '')) {
     await ctx.reply('🟥 Error :(')
     await ctx.reply(
       'Your chat-id: ' +
         ctx.chat.id +
-        ' is not in allowedIds. Add your id to the ANKIBOT_ALLOWED_IDS environment variable to use the bot.',
+        ' is not in allowedIds. Add your id to the ANKIBOT_ALLOWED_IDS environment variable to use the bot.'
     )
   } else {
-    next()
+    next!()
   }
 })
 
 bot.use(new LocalSession({ database: 'db.json', storage: LocalSession.storageFileSync }).middleware())
 
-bot.command('start', async (ctx) => {
+bot.command('start', async ctx => {
   ctx.session.done = 0 // restart done counter
   await ctx.reply('Welcome to the Anki Bot! ⭐️')
   await ctx.reply('Starting recording sesssion...')
-  const notes = await getNotesNeedingSound(noteSpecs)
   await refreshState(ctx)
   await ctx.reply('Ready! Please record your voice for the words we send.')
   next(ctx)
 })
 
-const refreshState = async (ctx) => {
+const refreshState = async (ctx: ContextMessageUpdate) => {
   try {
     ctx.session.notes = await getNotesNeedingSound(noteSpecs)
     await ctx.reply('There are ' + ctx.session.notes.length + ' words to be recorded 🦕')
@@ -56,11 +70,11 @@ const refreshState = async (ctx) => {
   }
 }
 
-const next = async (ctx) => {
+const next = async (ctx: ContextMessageUpdate) => {
   const notes = ctx.session.notes
 
   if (notes.length == 0) {
-    ctx.session.textToRecord = false
+    ctx.session.textToRecord = null
     ctx.reply('No more words to record! Thanks for the help ♥️')
     return
   }
@@ -76,7 +90,7 @@ const next = async (ctx) => {
   await ctx.reply('🎤 ' + ctx.session.textToRecord)
 }
 
-bot.on(['voice'], async (ctx) => {
+bot.on(['voice'], async ctx => {
   console.log(ctx.session)
   if (!ctx.session.textToRecord) {
     ctx.reply('Sorry, please run /start again')
@@ -86,19 +100,27 @@ bot.on(['voice'], async (ctx) => {
 
   ctx.reply(
     'Is the recording good? (if not, record a new one)',
-    Markup.inlineKeyboard([Markup.callbackButton('Voice is good', 'savevoice')]).extra(),
+    Markup.inlineKeyboard([Markup.callbackButton('Voice is good', 'savevoice')]).extra()
   )
 })
 
-bot.action('savevoice', async (ctx) => {
-  if (!ctx.session.voicemsg) {
+bot.action('savevoice', async ctx => {
+  if (!ctx.session.voicemsg || !ctx.session.textToRecord) {
     ctx.reply('Sorry, please run /start again')
     return
   }
 
+  if (!ctx.session.voicemsg.voice) {
+    ctx.reply('No voice on the voicemsg object!')
+    return
+  }
+
+  const url = await ctx.telegram.getFileLink(ctx.session.voicemsg.voice.file_id)
+  console.log('url: ', url)
+
   if (ctx.session.done == 1 || ctx.session.done % 10 == 1) {
     ctx.reply('Checking that the recordings are being saved...')
-    await saveVoice(ctx, ctx.session.textToRecord, ctx.session.voicemsg.voice.file_id, ctx.session.note)
+    await saveVoice(url, ctx.session.textToRecord, ctx.session.note)
     const oldlength = ctx.session.notes.length
     await refreshState(ctx)
     if (ctx.session.notes.length == oldlength - 1) {
@@ -108,56 +130,53 @@ bot.action('savevoice', async (ctx) => {
       return
     }
   } else {
-    saveVoice(ctx, ctx.session.textToRecord, ctx.session.voicemsg.voice.file_id, ctx.session.note)
+    saveVoice(url, ctx.session.textToRecord, ctx.session.note)
   }
 
-  ctx.session.notes = ctx.session.notes.filter((n) => {
+  ctx.session.notes = ctx.session.notes.filter(n => {
     return n.fields[n.noteSpec.textField].value != ctx.session.note.fields[ctx.session.note.noteSpec.textField].value
   })
   next(ctx)
 })
 
-const saveVoice = async (ctx, word, file_id, note) => {
-  console.log('Saving voice for word: ', word, file_id, note.noteId)
-  console.log('getting file link')
-  const url = await ctx.telegram.getFileLink(file_id)
-  console.log('getting file link done')
+export const saveVoice = async (url: string, word: string, note: Note) => {
+  console.log('Saving voice for word: ', word, note.noteId)
   const filename = 'ankibot-' + word.replace(/\s/g, '-') + '.mp3'
 
-  b64 = await urlToB64(url)
+  const b64 = await urlToB64(url)
 
   await invoke('storeMediaFile', {
     filename: filename,
     data: b64,
   })
 
-  for (const i in note.targetNotes) {
-    await addTextToFieldInNote(note.targetNotes[i], '[sound:' + filename + ']', note.noteSpec.soundField)
+  for (const targetNote of note.targetNotes) {
+    await addTextToFieldInNote(targetNote, '[sound:' + filename + ']', note.noteSpec.soundField)
   }
 }
 
-bot.command('notifyall', async (ctx) => {
+bot.command('notifyall', async () => {
   const notes = await getNotesNeedingSound(noteSpecs)
   let msg = '🌈 Bot is online ready for some recording! ' + notes.length + ' sounds needed :)'
 
   const db = await fs.readJSON('./db.json')
   console.log('db: ', db)
-  db.sessions.forEach((s) => {
+  db.sessions.forEach((s: any) => {
     bot.telegram.sendMessage(s.id.split(':')[0], msg)
   })
 })
 
-bot.command('sync', async (ctx) => {
+bot.command('sync', async ctx => {
   const res = await invoke('sync')
   console.log('res: ', res)
   ctx.reply('good')
 })
 
 testAnkiConnection()
-  .then((a) => {
+  .then(() => {
     bot.launch()
   })
-  .catch((e) => {
+  .catch((e: any) => {
     console.error(chalk.red('ERROR: Could not connect to AnkiConnect'))
     console.error(e)
   })

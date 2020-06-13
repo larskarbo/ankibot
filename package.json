@@ -1,6 +1,34 @@
 {
+  "name": "ankibot",
+  "version": "2.0.0",
+  "description": "ankibot",
+  "license": "MIT",
+  "repository": "",
+  "author": {
+    "name": "",
+    "email": "",
+    "url": ""
+  },
+  "keywords": [
+    ""
+  ],
+  "files": [
+    "lib"
+  ],
+  "main": "lib/index",
+  "types": "lib/index",
   "scripts": {
-    "start": "node src/index"
+    "clean": "rimraf lib && rimraf coverage",
+    "format": "prettier --write \"{src,__tests__}/**/*.ts\" --single-quote --trailing-comma es5",
+    "lint": "tslint --force --format verbose \"src/**/*.ts\"",
+    "prepublishOnly": "npm run build",
+    "prebuild": "npm run clean && npm run format && npm run lint && echo Using TypeScript && tsc --version",
+    "build": "tsc --pretty",
+    "start": "ts-node src/index.ts",
+    "test": "jest __tests__/* --no-watchman --bail --runInBand",
+    "coverage": "jest --coverage",
+    "watch": "npm run build -- --watch",
+    "watch:test": "jest --watch"
   },
   "dependencies": {
     "chalk": "^4.0.0",
@@ -17,22 +45,23 @@
     "xmlhttprequest": "^1.8.0"
   },
   "devDependencies": {
-    "husky": ">=4",
-    "lint-staged": ">=10",
-    "prettier": "^2.0.5"
+    "@types/jest": "^23.3.3",
+    "@types/node": "^10.11.4",
+    "ava": "^3.8.2",
+    "coveralls": "^3.0.2",
+    "jest": "^23.6.0",
+    "prettier": "^1.14.3",
+    "rimraf": "^2.6.2",
+    "ts-jest": "^23.10.3",
+    "ts-node": "^8.10.2",
+    "tslint": "^5.11.0",
+    "tslint-config-prettier": "^1.15.0",
+    "typescript": "^3.1.1"
   },
-  "husky": {
-    "hooks": {
-      "pre-commit": "lint-staged"
-    }
+  "engines": {
+    "node": ">=10.0.0"
   },
-  "lint-staged": {
-    "*.{js,css,md}": "prettier --write"
-  },
-  "name": "ankibot",
-  "version": "2.0.0",
-  "main": "index.js",
-  "repository": "git@github.com:larskarbo/ankibot.git",
-  "author": "Lars Karbo <mail@larskarbo.no>",
-  "license": "MIT"
+  "jest": {
+    "preset": "ts-jest"
+  }
 }

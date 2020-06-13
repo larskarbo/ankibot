@@ -1,4 +1,6 @@
-module.exports = [
+import { NoteSpec } from './ankihelpers'
+
+const specs: NoteSpec[] = [
   {
     deck: '*',
     cardType: '3. All-Purpose Card',
@@ -16,3 +18,5 @@ module.exports = [
     prefferedDeck: 'all::French',
   },
 ]
+
+export default specs
