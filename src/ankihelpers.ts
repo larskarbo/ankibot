@@ -1,5 +1,6 @@
 const { groupBy, values } = require('lodash')
 const { invoke } = require('./anki')
+import {stripHtml} from './utils'
 
 export const testAnkiConnection = () => invoke('version')
 
@@ -60,7 +61,7 @@ export const getNotesNeedingSoundFromNoteSpec = async (noteSpec: NoteSpec): Prom
 const removeDuplicatesAndAddTargetNotes = (notes: Note[], spec: NoteSpec) => {
   // remove duplicates
   const notesWithoutDuplicates: Note[] = []
-  const grouped: Array<Note[]> = values(groupBy(notes, (n: Note) => n.fields[spec.textField].value))
+  const grouped: Array<Note[]> = values(groupBy(notes, (n: Note) => stripHtml(n.fields[spec.textField].value)))
   grouped.forEach(group => {
     const thisNote: Note = {
       ...group[0],

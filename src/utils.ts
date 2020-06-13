@@ -1,5 +1,6 @@
 var ffmpeg = require('fluent-ffmpeg')
 const fs = require('fs-extra')
+const cheerio =require("cheerio")
 
 export const urlToB64 = (url: string): Promise<string> => {
   return new Promise(resolve => {
@@ -12,4 +13,8 @@ export const urlToB64 = (url: string): Promise<string> => {
       })
       .run()
   })
+}
+
+export const stripHtml = (html : string) => {
+	return cheerio.load(html).text().split("\n").join("")
 }

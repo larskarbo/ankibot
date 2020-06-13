@@ -31,7 +31,9 @@
     "watch:test": "jest --watch"
   },
   "dependencies": {
+    "@types/cheerio": "^0.22.18",
     "chalk": "^4.0.0",
+    "cheerio": "^1.0.0-rc.3",
     "fluent-ffmpeg": "^2.1.2",
     "forvo": "^1.0.0",
     "fs-extra": "^9.0.0",
