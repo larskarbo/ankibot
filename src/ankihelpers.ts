@@ -103,3 +103,10 @@ export const addTextToFieldInNote = async (noteId: number, text: string, field: 
     },
   })
 }
+
+export const addTagToNote = async (noteId: number, tag: string) => {
+	await invoke("addTags", {
+		notes: [noteId],
+		tags: tag
+	})
+}

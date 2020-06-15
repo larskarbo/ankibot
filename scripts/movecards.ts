@@ -23,11 +23,10 @@ const moveMissingNotes = async (spec: NoteSpec) => {
   const pre = await countNotes('deck:' + spec.prefferedDeck)
   // console.log('deck:' + spec.prefferedDeck)
   const notes = await getNotesNeedingSoundFromNoteSpec(spec)
-  console.log('notes: ', notes.length)
   const cards = notes.map(n => n.cards).flat()
   await invoke('changeDeck', { cards, deck: spec.missingVoiceDeck })
   const post = await countNotes('deck:' + spec.prefferedDeck)
-  console.log(chalk.green('moved ' + (pre - post) + ' notes to ' + spec.prefferedDeck))
+  console.log(chalk.green('moved ' + (pre - post) + ' notes to ' + spec.missingVoiceDeck))
 }
 
 const moveGoodNotes = async (spec: NoteSpec) => {

@@ -7,8 +7,9 @@ const chalk = require('chalk')
 
 import noteSpecs from './noteSpecs.config'
 import { invoke } from './anki'
-import { Note, getNotesNeedingSound, addTextToFieldInNote, testAnkiConnection } from './ankihelpers'
+import { Note, getNotesNeedingSound, addTagToNote,addTextToFieldInNote, testAnkiConnection } from './ankihelpers'
 import { urlToB64 } from './utils'
+import { v4 as uuid } from 'uuid'
 
 const bot = new Telegraf(process.env.ANKIBOT_API_TOKEN as string)
 
@@ -122,7 +123,7 @@ bot.action('savevoice', async ctx => {
 
 	if (ctx.session.done == 1 || ctx.session.done % 10 == 1) {
 		ctx.reply('Checking that the recordings are being saved...')
-		await saveVoice(url, ctx.session.textToRecord, ctx.session.note)
+		await saveVoice(url, ctx.session.textToRecord, ctx.session.note, ctx.chat?.username)
 		const oldlength = ctx.session.notes.length
 		await refreshState(ctx)
 		if (ctx.session.notes.length == oldlength - 1) {
@@ -132,7 +133,7 @@ bot.action('savevoice', async ctx => {
 			return
 		}
 	} else {
-		saveVoice(url, ctx.session.textToRecord, ctx.session.note)
+		saveVoice(url, ctx.session.textToRecord, ctx.session.note, ctx.chat?.username)
 	}
 
 	ctx.session.notes = ctx.session.notes.filter(n => {
@@ -141,9 +142,9 @@ bot.action('savevoice', async ctx => {
 	next(ctx)
 })
 
-export const saveVoice = async (url: string, word: string, note: Note) => {
+export const saveVoice = async (url: string, word: string, note: Note, username?: string) => {
 	console.log('Saving voice for word: ', word, note.noteId)
-	const filename = 'ankibot-' + word.replace(/\s/g, '-') + '.mp3'
+	const filename = 'ankibot-' + uuid() + '.mp3'
 
 	const b64 = await urlToB64(url)
 
@@ -154,6 +155,7 @@ export const saveVoice = async (url: string, word: string, note: Note) => {
 
 	for (const targetNote of note.targetNotes) {
 		await addTextToFieldInNote(targetNote, '[sound:' + filename + ']', note.noteSpec.soundField)
+		await addTagToNote(targetNote, `ankibot:${username}`)
 	}
 }
 

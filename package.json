@@ -32,6 +32,7 @@
   },
   "dependencies": {
     "@types/cheerio": "^0.22.18",
+    "@types/uuid": "^8.0.0",
     "chalk": "^4.0.0",
     "cheerio": "^1.0.0-rc.3",
     "fluent-ffmpeg": "^2.1.2",
@@ -44,6 +45,7 @@
     "string-strip-html": "^4.4.7",
     "telegraf": "^3.37.0",
     "telegraf-session-local": "^1.0.2",
+    "uuid": "^8.1.0",
     "xmlhttprequest": "^1.8.0"
   },
   "devDependencies": {
