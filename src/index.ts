@@ -30,6 +30,8 @@ declare module 'telegraf' {
 let allowedIds: string[] = []
 if (process.env.ANKIBOT_ALLOWED_IDS) {
 	allowedIds = process.env.ANKIBOT_ALLOWED_IDS.split(',')
+} else {
+	console.log("⚠️: Bot is public and anyone will be able to use it.")
 }
 
 bot.use(async (ctx, next) => {
@@ -54,7 +56,8 @@ bot.use(new LocalSession({ database: 'db.json', storage: LocalSession.storageFil
 bot.command('start', async ctx => {
 	ctx.session.done = 0 // restart done counter
 	await ctx.reply('Welcome to the Anki Bot! ⭐️')
-	await ctx.reply('Starting recording sesssion...')
+	await ctx.reply('Syncing db & starting recording sesssion...')
+	await invoke('sync')
 	await refreshState(ctx)
 	await ctx.reply('Ready! Please record your voice for the words we send.')
 	next(ctx)
