@@ -19,6 +19,7 @@ interface Session {
 	note: Note
 	textToRecord: string | null
 	voicemsg: TelegrafContext['message']
+	registered: boolean
 }
 
 declare module 'telegraf' {
@@ -191,6 +192,19 @@ bot.command('sync', async ctx => {
 	const res = await invoke('sync')
 	console.log('res: ', res)
 	ctx.reply('good')
+})
+
+bot.command('register', async ctx => {
+	// register for notification through the scripts/notify.ts script
+	if(ctx.session.registered){
+		ctx.session.registered = false
+		await ctx.reply('Unregistered🌻')
+	} else {
+		ctx.session.registered = true
+		await ctx.reply('Registered✅')
+
+	}
+
 })
 
 testAnkiConnection()
