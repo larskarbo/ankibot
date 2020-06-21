@@ -72,7 +72,8 @@ const refreshState = async (ctx: ContextMessageUpdate) => {
 		return
 	} catch (error) {
 		console.error(error)
-		return ctx.reply('Error when fetching notes from anki :(')
+		await ctx.reply('Error when fetching notes from anki :(')
+		return
 	}
 }
 
