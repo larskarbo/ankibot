@@ -24,7 +24,7 @@
     "prepublishOnly": "npm run build",
     "prebuild": "npm run clean && npm run format && npm run lint && echo Using TypeScript && tsc --version",
     "build": "tsc --pretty",
-    "start": "ts-node src/index.ts",
+    "start": "ts-node-dev --no-notify src/index.ts",
     "test": "jest __tests__/* --no-watchman --bail --runInBand",
     "coverage": "jest --coverage",
     "watch": "npm run build -- --watch",

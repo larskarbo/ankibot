@@ -39,6 +39,7 @@ bot.use(async (ctx, next) => {
 		await ctx.reply('🟥 Error: could not read your ctx.chat...')
 		return
 	}
+
 	if (allowedIds.length && !allowedIds.includes(ctx.chat.id + '')) {
 		await ctx.reply('🟥 Error :(')
 		await ctx.reply(
@@ -91,7 +92,7 @@ const next = async (ctx: ContextMessageUpdate) => {
 	ctx.session.note = note
 	ctx.session.textToRecord = stripHtml(note.fields[note.noteSpec.textField].value)
 	ctx.session.done++
-	await ctx.reply('🎤 ' + ctx.session.textToRecord)
+	await ctx.reply('🎤 ' + ctx.session.textToRecord, Markup.inlineKeyboard([Markup.callbackButton('Skip (not perfect sentence)', 'skip')]).extra())
 }
 
 bot.on(['voice'], async ctx => {
@@ -106,6 +107,19 @@ bot.on(['voice'], async ctx => {
 		'Is the recording good? (if not, record a new one)',
 		Markup.inlineKeyboard([Markup.callbackButton('Voice is good', 'savevoice')]).extra()
 	)
+})
+
+bot.action('skip', async ctx => {
+	await ctx.answerCbQuery();
+	await ctx.editMessageReplyMarkup(Markup.inlineKeyboard([Markup.callbackButton('skipped ✅', 'asdfasdfasdf')]))
+	for (const targetNote of ctx.session.note.targetNotes) {
+		await addTagToNote(targetNote, `ankibot:skip`)
+	}
+	ctx.session.notes = ctx.session.notes.filter(n => {
+		return n.fields[n.noteSpec.textField].value != ctx.session.note.fields[ctx.session.note.noteSpec.textField].value
+	})
+
+	next(ctx)
 })
 
 bot.action('savevoice', async ctx => {

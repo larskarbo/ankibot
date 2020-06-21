@@ -12,12 +12,8 @@ export interface Note {
     }
   }
   modelName: string
-  cards: {
-    [index: number]: number
-  }
-  tags: {
-    [index: number]: string
-  }
+  cards: Array<number>
+  tags: Array<string>
   noteSpec: NoteSpec
   targetNotes: number[]
 }
@@ -53,7 +49,7 @@ export const getNotesNeedingSoundFromNoteSpec = async (noteSpec: NoteSpec): Prom
       return true
     }
     return false
-  })
+  }).filter(note => !note.tags.includes("ankibot:skip"))
 
   return notesWithoutSound
 }
