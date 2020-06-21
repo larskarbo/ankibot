@@ -7,7 +7,7 @@ const specs: NoteSpec[] = [
     textField: '- The full sentence (no words blanked out)',
     soundField: '- Extra Info (Pronunciation, personal connections, conjugations, etc)',
     missingVoiceDeck: 'missingvoice-all-purp',
-    prefferedDeck: 'all::french-grammar',
+    prefferedDeck: 'all::French',
   },
   {
     deck: '*',

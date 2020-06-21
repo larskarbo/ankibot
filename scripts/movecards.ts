@@ -33,9 +33,9 @@ const moveGoodNotes = async (spec: NoteSpec) => {
   console.log(chalk.blue(spec.cardType, 'moving voicecards'))
 
   const notesNeedingSound = await getNotesNeedingSoundFromNoteSpec(spec)
-  const notesInMissinVoiceDeck: Note[] = await getNotes('deck:' + spec.missingVoiceDeck)
+  const notesInMissingVoiceDeck: Note[] = await getNotes('deck:' + spec.missingVoiceDeck)
 
-  const malplacedNotes = notesInMissinVoiceDeck.filter(n => {
+  const malplacedNotes = notesInMissingVoiceDeck.filter(n => {
     return !notesNeedingSound.find(nns => nns.noteId == n.noteId)
   })
 
